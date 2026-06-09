@@ -29,10 +29,10 @@ export default function LoginPage() {
         {/* Logo */}
         <div className="text-center mb-8">
           <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-white/10 backdrop-blur border border-white/20 mb-4">
-            <Leaf className="w-8 h-8 text-brand-300" />
+            <img src="/logo.png" alt="GAP-TIME" className="w-8 h-8 object-contain" />
           </div>
           <h1 className="text-3xl font-bold text-white tracking-tight">GAP-TIME</h1>
-          <p className="text-brand-300 text-sm mt-1">Smart Farmer Workforce Tracker</p>
+          <p className="text-brand-300 text-sm mt-1">Green Afro-Palms Workforce Tracker</p>
         </div>
 
         {/* Card */}
@@ -53,7 +53,7 @@ export default function LoginPage() {
               <input
                 type="email"
                 className="input"
-                placeholder="you@company.com"
+                placeholder="name@gap.com"
                 value={email}
                 onChange={e => setEmail(e.target.value)}
                 required
@@ -103,7 +103,7 @@ export default function LoginPage() {
         </div>
 
         <p className="text-center text-brand-400/60 text-xs mt-6">
-          © {new Date().getFullYear()} SmartFarmer Community · GAP-TIME v1.0
+          © {new Date().getFullYear()} Powered by SmartFarmer · GAP-TIME v1.0
         </p>
       </div>
     </div>
