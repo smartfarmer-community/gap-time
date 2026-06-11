@@ -26,7 +26,7 @@ export default function Header({ isOffline }: HeaderProps) {
         {/* Logo */}
         <div className="flex items-center gap-2.5">
           <div className="w-8 h-8 rounded-lg bg-brand-700 flex items-center justify-center">
-            <Leaf className="w-4 h-4 text-white" />
+            <img src="/logo.png" alt="GAP-TIME" className="w-8 h-8 object-contain" />
           </div>
           <div className="hidden sm:block">
             <span className="font-bold text-stone-800 text-sm tracking-tight">GAP-TIME</span>

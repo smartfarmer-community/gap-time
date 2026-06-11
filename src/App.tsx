@@ -13,7 +13,7 @@ export default function App() {
       <div className="min-h-screen bg-gradient-to-br from-brand-900 to-stone-900 flex items-center justify-center">
         <div className="flex flex-col items-center gap-4 text-white">
           <div className="w-14 h-14 rounded-2xl bg-white/10 border border-white/20 flex items-center justify-center">
-            <Leaf className="w-7 h-7 text-brand-300" />
+            <img src="/logo.png" alt="GAP-TIME" className="w-8 h-8 object-contain" />
           </div>
           <div className="flex items-center gap-2.5">
             <span className="w-5 h-5 border-2 border-white/20 border-t-white rounded-full animate-spin" />
