@@ -55,7 +55,7 @@ export default function Header({ isOffline }: HeaderProps) {
             </div>
             {(profile?.position || role) && (
               <span className={`badge hidden sm:inline-flex ${roleBadgeColor[role ?? 'employee']}`}>
-                {profile?.position ?? (role ? roleLabels[role] : '')}
+                {profile?.position || (role ? roleLabels[role] : '')}
               </span>
             )}
           </div>

@@ -9,12 +9,12 @@ export interface Profile {
   name: string
   email: string
   department: string | null
+  position: string | null
   default_work_mode: WorkMode
   default_hub_id: string | null
   is_active: boolean
   created_at: string
   updated_at: string
-  position: string | null
   role?: AppRole
 }
 

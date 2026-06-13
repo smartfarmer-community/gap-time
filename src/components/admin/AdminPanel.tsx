@@ -52,10 +52,10 @@ export default function AdminPanel() {
 
   const exportCSV = () => {
     const rows = [
-      ['Employee', 'Department', 'Date', 'Work Mode', 'Clock In', 'Clock Out', 'Duration', 'Geofence Verified', 'Distance (m)', 'Status', 'Achievements'],
+      ['Employee', 'Position', 'Date', 'Work Mode', 'Clock In', 'Clock Out', 'Duration', 'Geofence Verified', 'Distance (m)', 'Status', 'Achievements'],
       ...logs.map(l => [
         l.profileData?.name ?? '',
-        l.profileData?.department ?? '',
+        l.profileData?.position ?? l.profileData?.department ?? '',
         l.log_date,
         workModeLabel(l.work_mode),
         formatTime(l.clock_in_time),
@@ -152,7 +152,7 @@ function UsersTab({ profiles, onRefresh, showMsg }: { profiles: Profile[]; onRef
     }
     showMsg('success', `Account created for ${form.name}.`)
     setShowInvite(false)
-    setForm({ name: '', email: '', password: '', dept: '', role: 'employee', mode: 'on_site' })
+    setForm({ name: '', email: '', password: '', dept: '', position: '', role: 'employee', mode: 'on_site' })
     setSaving(false); setTimeout(onRefresh, 1000)
   }
 
@@ -229,7 +229,7 @@ function UsersTab({ profiles, onRefresh, showMsg }: { profiles: Profile[]; onRef
               <div className="w-9 h-9 rounded-full bg-brand-100 flex items-center justify-center text-brand-700 font-bold text-sm shrink-0">{p.name.charAt(0)}</div>
               <div>
                 <p className="text-sm font-semibold text-stone-700">{p.name}</p>
-                <p className="text-xs text-stone-400">{log.profileData?.position ?? log.profileData?.department}</p>
+                <p className="text-xs text-stone-400">{p.email} · {p.position ?? p.department ?? 'No position set'}</p>
               </div>
             </div>
             <div className="flex items-center gap-2">
@@ -354,7 +354,7 @@ function LogsTab({ logs, loading, onExport, onRefresh }: { logs: EnrichedLog[]; 
                 <tr key={log.id} className={`hover:bg-stone-50 ${log.status === 'flagged' ? 'bg-red-50/30' : ''}`}>
                   <td className="py-3 px-2 first:pl-0">
                     <p className="font-medium text-stone-700 whitespace-nowrap">{log.profileData?.name ?? '—'}</p>
-                    <p className="text-xs text-stone-400">{log.profileData?.department}</p>
+                    <p className="text-xs text-stone-400">{log.profileData?.position ?? log.profileData?.department}</p>
                   </td>
                   <td className="py-3 px-2 text-xs text-stone-500 whitespace-nowrap">{formatDate(log.log_date)}</td>
                   <td className="py-3 px-2"><span className="badge bg-stone-100 text-stone-600 border-stone-200 text-xs">{workModeLabel(log.work_mode)}</span></td>
