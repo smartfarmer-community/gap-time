@@ -215,7 +215,7 @@ function UsersTab({ profiles, onRefresh, showMsg }: { profiles: Profile[]; onRef
       {showInvite && (
         <form onSubmit={handleCreate} className="rounded-2xl border border-brand-200 bg-brand-50/30 p-5 space-y-3">
           <h4 className="font-semibold text-stone-700 text-sm">New Account</h4>
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             {[
               { label: 'Full Name', key: 'name', placeholder: 'Kwame Mensah', type: 'text' },
               { label: 'Email', key: 'email', placeholder: 'kwame@company.com', type: 'email' },
@@ -254,20 +254,23 @@ function UsersTab({ profiles, onRefresh, showMsg }: { profiles: Profile[]; onRef
 
       <div className="divide-y divide-stone-100">
         {profiles.map(p => (
-          <div key={p.id} className="flex items-center justify-between py-3 gap-3">
-            <div className="flex items-center gap-3">
-              <div className="w-9 h-9 rounded-full bg-brand-100 flex items-center justify-center text-brand-700 font-bold text-sm shrink-0">{p.name.charAt(0)}</div>
-              <div>
-                <p className="text-sm font-semibold text-stone-700">{p.name}</p>
-                <p className="text-xs text-stone-400">{p.email} · {p.department ?? 'No department set'}</p>
+          <div key={p.id} className="flex flex-col sm:flex-row sm:items-center sm:justify-between py-3 gap-2.5">
+            {/* Name + email */}
+            <div className="flex items-center gap-2.5 min-w-0">
+              <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-brand-100 flex items-center justify-center text-brand-700 font-bold text-xs sm:text-sm shrink-0">{p.name.charAt(0)}</div>
+              <div className="min-w-0">
+                <p className="text-sm font-semibold text-stone-700 truncate">{p.name}</p>
+                <p className="text-[11px] text-stone-400 truncate">{p.email} · {p.department ?? 'No department set'}</p>
               </div>
             </div>
-            <div className="flex items-center gap-2">
+
+            {/* Position + access + active — wraps on mobile */}
+            <div className="flex flex-wrap items-center gap-1.5 sm:gap-2 pl-10 sm:pl-0">
               {/* POSITION — primary, editable */}
               {editingPosition === p.user_id ? (
-                <div className="flex gap-1.5 items-center">
+                <div className="flex flex-wrap gap-1.5 items-center w-full sm:w-auto">
                   <select
-                    className="input py-1 text-xs w-44"
+                    className="input py-1 text-[11px] w-full sm:w-40"
                     defaultValue={POSITION_OPTIONS.includes(p.position ?? '') ? p.position! : '__custom__'}
                     onChange={e => {
                       if (e.target.value === '__custom__') { setCustomPosition(p.position ?? ''); return }
@@ -280,7 +283,7 @@ function UsersTab({ profiles, onRefresh, showMsg }: { profiles: Profile[]; onRef
                   </select>
                   {(customPosition || !POSITION_OPTIONS.includes(p.position ?? '')) && (
                     <input
-                      className="input py-1 text-xs w-40"
+                      className="input py-1 text-[11px] w-full sm:w-36"
                       placeholder="Type position…"
                       defaultValue={p.position ?? ''}
                       onChange={e => setCustomPosition(e.target.value)}
@@ -292,8 +295,8 @@ function UsersTab({ profiles, onRefresh, showMsg }: { profiles: Profile[]; onRef
                 </div>
               ) : (
                 <>
-                  <span className="badge bg-emerald-50 text-emerald-700 border-emerald-200">{p.position ?? 'No position set'}</span>
-                  <button onClick={() => { setEditingPosition(p.user_id); setCustomPosition('') }} className="p-1 text-stone-400 hover:text-stone-600" title="Change job position"><Edit2 className="w-3.5 h-3.5" /></button>
+                  <span className="badge bg-emerald-50 text-emerald-700 border-emerald-200 text-[10px] sm:text-xs px-1.5 py-0.5 sm:px-2 sm:py-0.5 max-w-[150px] sm:max-w-none truncate">{p.position ?? 'No position set'}</span>
+                  <button onClick={() => { setEditingPosition(p.user_id); setCustomPosition('') }} className="p-1 text-stone-400 hover:text-stone-600 shrink-0" title="Change job position"><Edit2 className="w-3.5 h-3.5" /></button>
                 </>
               )}
 
@@ -315,7 +318,7 @@ function UsersTab({ profiles, onRefresh, showMsg }: { profiles: Profile[]; onRef
               )}
 
               <button onClick={() => handleToggleActive(p)}
-                className={`text-xs px-2.5 py-1 rounded-lg border font-medium transition ${p.is_active ? 'bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-100' : 'bg-red-50 text-red-700 border-red-200 hover:bg-red-100'}`}>
+                className={`text-[10px] sm:text-xs px-2 sm:px-2.5 py-0.5 sm:py-1 rounded-lg border font-medium transition shrink-0 ${p.is_active ? 'bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-100' : 'bg-red-50 text-red-700 border-red-200 hover:bg-red-100'}`}>
                 {p.is_active ? 'Active' : 'Inactive'}
               </button>
             </div>
