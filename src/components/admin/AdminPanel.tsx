@@ -135,7 +135,7 @@ export default function AdminPanel() {
 // ---- USERS TAB ----
 function UsersTab({ profiles, onRefresh, showMsg }: { profiles: Profile[]; onRefresh: () => void; showMsg: (t: 'success' | 'error', m: string) => void }) {
   const [showInvite, setShowInvite] = useState(false)
-  const [form, setForm] = useState({ name: '', email: '', password: '', dept: '', role: 'employee' as AppRole, mode: 'on_site' as WorkMode })
+  const [form, setForm] = useState({ name: '', email: '', password: '', dept: '', position: '', role: 'employee' as AppRole, mode: 'on_site' as WorkMode })
   const [saving, setSaving] = useState(false)
   const [editingRole, setEditingRole] = useState<string | null>(null)
 
@@ -143,7 +143,7 @@ function UsersTab({ profiles, onRefresh, showMsg }: { profiles: Profile[]; onRef
     e.preventDefault(); setSaving(true)
     const { data, error } = await supabase.auth.signUp({
       email: form.email, password: form.password,
-      options: { data: { name: form.name, department: form.dept, default_work_mode: form.mode } }
+      options: { data: { name: form.name, department: form.dept, position: form.position, default_work_mode: form.mode } }
     })
     if (error) { showMsg('error', error.message); setSaving(false); return }
     if (data.user && form.role !== 'employee') {
@@ -191,6 +191,7 @@ function UsersTab({ profiles, onRefresh, showMsg }: { profiles: Profile[]; onRef
               { label: 'Email', key: 'email', placeholder: 'kwame@company.com', type: 'email' },
               { label: 'Password', key: 'password', placeholder: 'Temporary password', type: 'password' },
               { label: 'Department', key: 'dept', placeholder: 'Field Agronomy', type: 'text' },
+              { label: 'Job Position', key: 'position', placeholder: 'Capital & Partnership Officer', type: 'text' },
             ].map(f => (
               <div key={f.key}>
                 <label className="label">{f.label}</label>
@@ -228,7 +229,7 @@ function UsersTab({ profiles, onRefresh, showMsg }: { profiles: Profile[]; onRef
               <div className="w-9 h-9 rounded-full bg-brand-100 flex items-center justify-center text-brand-700 font-bold text-sm shrink-0">{p.name.charAt(0)}</div>
               <div>
                 <p className="text-sm font-semibold text-stone-700">{p.name}</p>
-                <p className="text-xs text-stone-400">{p.email} · {p.department ?? 'No dept'}</p>
+                <p className="text-xs text-stone-400">{log.profileData?.position ?? log.profileData?.department}</p>
               </div>
             </div>
             <div className="flex items-center gap-2">

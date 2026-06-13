@@ -170,7 +170,7 @@ export default function ManagerDashboard() {
                           <tr key={log.id} className={`hover:bg-stone-50 transition ${log.status === 'flagged' ? 'bg-red-50/40' : ''}`}>
                             <td className="py-3 px-2 first:pl-0">
                               <p className="font-medium text-stone-700">{log.profileData?.name ?? '—'}</p>
-                              <p className="text-xs text-stone-400">{log.profileData?.department}</p>
+                              <p className="text-xs text-stone-400">{log.profileData?.position ?? log.profileData?.department}</p>
                             </td>
                             <td className="py-3 px-2 text-xs text-stone-500 whitespace-nowrap">{formatDate(log.log_date)}</td>
                             <td className="py-3 px-2">

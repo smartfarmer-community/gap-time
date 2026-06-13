@@ -51,11 +51,11 @@ export default function Header({ isOffline }: HeaderProps) {
             </div>
             <div className="hidden md:block text-right">
               <p className="text-xs font-semibold text-stone-700 leading-none">{profile?.name}</p>
-              <p className="text-xs text-stone-400 mt-0.5">{profile?.department ?? 'No department'}</p>
+              <p className="text-xs text-stone-400 mt-0.5">{profile?.position ?? profile?.department ?? 'No position'}</p>
             </div>
-            {role && (
-              <span className={`badge hidden sm:inline-flex ${roleBadgeColor[role]}`}>
-                {roleLabels[role]}
+            {(profile?.position || role) && (
+              <span className={`badge hidden sm:inline-flex ${roleBadgeColor[role ?? 'employee']}`}>
+                {profile?.position ?? (role ? roleLabels[role] : '')}
               </span>
             )}
           </div>

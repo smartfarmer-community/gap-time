@@ -14,6 +14,7 @@ export interface Profile {
   is_active: boolean
   created_at: string
   updated_at: string
+  position: string | null
   role?: AppRole
 }
 
