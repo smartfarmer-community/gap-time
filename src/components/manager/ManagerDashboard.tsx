@@ -6,7 +6,7 @@ import {
 import { useAuth } from '../../hooks/useAuth'
 import { supabase } from '../../lib/supabase'
 import { formatDate, formatTime, formatDuration, workModeLabel, statusColor } from '../../lib/utils'
-import type { TimeLog, CorrectionRequest, Profile } from '../../types'
+import type { TimeLog, CorrectionRequest, Profile, GeofenceHub } from '../../types'
 import Header from '../shared/Header'
 
 type EnrichedLog = TimeLog & { profileData?: Profile }
@@ -16,6 +16,7 @@ export default function ManagerDashboard() {
   const { user } = useAuth()
   const [logs, setLogs] = useState<EnrichedLog[]>([])
   const [corrections, setCorrections] = useState<EnrichedCorrection[]>([])
+  const [hubs, setHubs] = useState<GeofenceHub[]>([])
   const [loading, setLoading] = useState(true)
   const [activeTab, setActiveTab] = useState<'logs' | 'corrections'>('logs')
   const [filterDate, setFilterDate] = useState(new Date().toISOString().split('T')[0])
@@ -28,15 +29,17 @@ export default function ManagerDashboard() {
   const fetchData = useCallback(async () => {
     setLoading(true)
     // Fetch logs and profiles SEPARATELY — no join needed
-    const [{ data: logData }, { data: corrData }, { data: profileData }] = await Promise.all([
+    const [{ data: logData }, { data: corrData }, { data: profileData }, { data: hubData }] = await Promise.all([
       supabase.from('time_logs').select('*').order('created_at', { ascending: false }).limit(200),
       supabase.from('correction_requests').select('*').order('created_at', { ascending: false }),
       supabase.from('profiles').select('*'),
+      supabase.from('geofence_hubs').select('*'),
     ])
 
     const profileMap: Record<string, Profile> = {}
     ;(profileData ?? []).forEach((p: Profile) => { profileMap[p.user_id] = p })
 
+    if (hubData) setHubs(hubData)
     if (logData) setLogs((logData as TimeLog[]).map(l => ({ ...l, profileData: profileMap[l.user_id] })))
     if (corrData) setCorrections((corrData as CorrectionRequest[]).map(c => ({ ...c, profileData: profileMap[c.user_id] })))
     setLoading(false)
@@ -194,9 +197,11 @@ export default function ManagerDashboard() {
                             <td className="py-3 px-2 text-xs text-stone-400">
                               {log.clock_in_lat ? (
                                 <span className="flex items-center gap-1">
-                                  <MapPin className="w-3 h-3" />
-                                  {log.clock_in_lat.toFixed(4)}, {log.clock_in_long?.toFixed(4)}
-                                  {log.distance_meters && <span className="ml-1 text-stone-300">({log.distance_meters}m)</span>}
+                                  <MapPin className="w-3 h-3 shrink-0" />
+                                  <span>
+                                    {log.hub_id ? (hubs.find(h => h.id === log.hub_id)?.location_name ?? 'Unknown hub') : 'No hub'}
+                                    {log.distance_meters !== null && <span className="text-stone-300"> · {Math.round(log.distance_meters)}m</span>}
+                                  </span>
                                 </span>
                               ) : '—'}
                             </td>

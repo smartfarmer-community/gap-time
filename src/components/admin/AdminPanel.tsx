@@ -51,18 +51,23 @@ export default function AdminPanel() {
   useEffect(() => { fetchData() }, [fetchData])
 
   const exportCSV = () => {
+    const hubMap: Record<string, string> = {}
+    hubs.forEach(h => { hubMap[h.id] = h.location_name })
+
     const rows = [
-      ['Employee', 'Position', 'Date', 'Work Mode', 'Clock In', 'Clock Out', 'Duration', 'Geofence Verified', 'Distance (m)', 'Status', 'Achievements'],
+      ['Employee', 'Position', 'Department', 'Date', 'Work Mode', 'Clock In', 'Clock Out', 'Duration', 'Geofence Verified', 'Location / Hub', 'Distance (m)', 'Status', 'Achievements'],
       ...logs.map(l => [
         l.profileData?.name ?? '',
-        l.profileData?.position ?? l.profileData?.department ?? '',
+        l.profileData?.position ?? '',
+        l.profileData?.department ?? '',
         l.log_date,
         workModeLabel(l.work_mode),
         formatTime(l.clock_in_time),
         formatTime(l.clock_out_time),
         l.clock_in_time && l.clock_out_time ? formatDuration(l.clock_in_time, l.clock_out_time) : '',
         l.geofence_verified ? 'Yes' : 'No',
-        l.distance_meters ? String(Math.round(l.distance_meters)) : '',
+        (l.hub_id && hubMap[l.hub_id]) ? hubMap[l.hub_id] : '',
+        l.distance_meters !== null ? String(Math.round(l.distance_meters)) : '',
         l.status,
         (l.daily_summary_notes ?? '').replace(/,/g, ';').replace(/\n/g, ' '),
       ])
@@ -123,7 +128,7 @@ export default function AdminPanel() {
           <div className="p-5">
             {activeTab === 'users' && <UsersTab profiles={profiles} onRefresh={fetchData} showMsg={showMsg} />}
             {activeTab === 'hubs' && <HubsTab hubs={hubs} onRefresh={fetchData} showMsg={showMsg} />}
-            {activeTab === 'logs' && <LogsTab logs={logs} loading={loading} onExport={exportCSV} onRefresh={fetchData} />}
+            {activeTab === 'logs' && <LogsTab logs={logs} hubs={hubs} loading={loading} onExport={exportCSV} onRefresh={fetchData} />}
             {activeTab === 'corrections' && <CorrectionsTab corrections={corrections} onRefresh={fetchData} showMsg={showMsg} adminId={user!.id} />}
           </div>
         </div>
@@ -325,8 +330,10 @@ function HubsTab({ hubs, onRefresh, showMsg }: { hubs: GeofenceHub[]; onRefresh:
 }
 
 // ---- LOGS TAB ----
-function LogsTab({ logs, loading, onExport, onRefresh }: { logs: EnrichedLog[]; loading: boolean; onExport: () => void; onRefresh: () => void }) {
+function LogsTab({ logs, hubs, loading, onExport, onRefresh }: { logs: EnrichedLog[]; hubs: GeofenceHub[]; loading: boolean; onExport: () => void; onRefresh: () => void }) {
   const [search, setSearch] = useState('')
+  const hubMap: Record<string, string> = {}
+  hubs.forEach(h => { hubMap[h.id] = h.location_name })
   const filtered = logs.filter(l => !search || l.profileData?.name?.toLowerCase().includes(search.toLowerCase()))
 
   return (
@@ -344,7 +351,7 @@ function LogsTab({ logs, loading, onExport, onRefresh }: { logs: EnrichedLog[]; 
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-stone-100">
-                {['Employee', 'Date', 'Mode', 'In', 'Out', 'Duration', 'Geofence', 'Dist', 'Status', 'Achievements'].map(h => (
+                {['Employee', 'Date', 'Mode', 'In', 'Out', 'Duration', 'Geofence', 'Location', 'Dist', 'Status', 'Achievements'].map(h => (
                   <th key={h} className="text-left text-xs font-semibold text-stone-400 uppercase tracking-wider py-2.5 px-2 first:pl-0 whitespace-nowrap">{h}</th>
                 ))}
               </tr>
@@ -368,8 +375,11 @@ function LogsTab({ logs, loading, onExport, onRefresh }: { logs: EnrichedLog[]; 
                       {log.geofence_verified ? '✓ Yes' : '✗ No'}
                     </span>
                   </td>
+                  <td className="py-3 px-2 text-xs text-stone-500 whitespace-nowrap">
+                    {log.hub_id ? (hubMap[log.hub_id] ?? '—') : '—'}
+                  </td>
                   <td className="py-3 px-2 text-xs text-stone-400 whitespace-nowrap">
-                    {log.distance_meters ? `${Math.round(log.distance_meters)}m` : '—'}
+                    {log.distance_meters !== null ? `${Math.round(log.distance_meters)}m` : '—'}
                   </td>
                   <td className="py-3 px-2"><span className={`badge ${statusColor(log.status)}`}>{log.status}</span></td>
                   <td className="py-3 px-2 text-xs text-stone-500 max-w-[200px]">
