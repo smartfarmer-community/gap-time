@@ -143,6 +143,8 @@ function UsersTab({ profiles, onRefresh, showMsg }: { profiles: Profile[]; onRef
   const [form, setForm] = useState({ name: '', email: '', password: '', dept: '', position: '', role: 'employee' as AppRole, mode: 'on_site' as WorkMode })
   const [saving, setSaving] = useState(false)
   const [editingRole, setEditingRole] = useState<string | null>(null)
+  const [editingPosition, setEditingPosition] = useState<string | null>(null)
+  const [customPosition, setCustomPosition] = useState('')
 
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault(); setSaving(true)
@@ -173,6 +175,29 @@ function UsersTab({ profiles, onRefresh, showMsg }: { profiles: Profile[]; onRef
     if (error) showMsg('error', error.message)
     else { showMsg('success', `User ${profile.is_active ? 'deactivated' : 'activated'}.`); onRefresh() }
   }
+
+  const handleChangePosition = async (profile: Profile, newPosition: string) => {
+    if (!newPosition.trim()) return
+    const { error } = await supabase.from('profiles').update({ position: newPosition.trim() }).eq('id', profile.id)
+    if (error) showMsg('error', error.message)
+    else { showMsg('success', 'Position updated.'); setEditingPosition(null); setCustomPosition(''); onRefresh() }
+  }
+
+  const POSITION_OPTIONS = [
+    'CEO',
+    'Administrative Lead',
+    'Human Resource Manager',
+    'Operations Officer',
+    'Project Lead',
+    'Farms Officer',
+    'Capital & Partnership Officer',
+    'Sales Lead',
+    'Sales Associate',
+    'Assist. Administrator',
+    'Marketing Officer',
+    'Field Officer',
+    '__custom__',
+  ]
 
   const roleColors: Record<AppRole, string> = {
     employee: 'bg-sky-100 text-sky-700 border-sky-200',
@@ -234,25 +259,61 @@ function UsersTab({ profiles, onRefresh, showMsg }: { profiles: Profile[]; onRef
               <div className="w-9 h-9 rounded-full bg-brand-100 flex items-center justify-center text-brand-700 font-bold text-sm shrink-0">{p.name.charAt(0)}</div>
               <div>
                 <p className="text-sm font-semibold text-stone-700">{p.name}</p>
-                <p className="text-xs text-stone-400">{p.email} · {p.position ?? p.department ?? 'No position set'}</p>
+                <p className="text-xs text-stone-400">{p.email} · {p.department ?? 'No department set'}</p>
               </div>
             </div>
             <div className="flex items-center gap-2">
-              {editingRole === p.user_id ? (
+              {/* POSITION — primary, editable */}
+              {editingPosition === p.user_id ? (
                 <div className="flex gap-1.5 items-center">
-                  <select className="input py-1 text-xs w-28" defaultValue={p.role} onChange={e => handleChangeRole(p.user_id, e.target.value as AppRole)}>
-                    <option value="employee">Employee</option>
-                    <option value="manager">Manager</option>
-                    <option value="admin">HR/Admin</option>
+                  <select
+                    className="input py-1 text-xs w-44"
+                    defaultValue={POSITION_OPTIONS.includes(p.position ?? '') ? p.position! : '__custom__'}
+                    onChange={e => {
+                      if (e.target.value === '__custom__') { setCustomPosition(p.position ?? ''); return }
+                      handleChangePosition(p, e.target.value)
+                    }}
+                  >
+                    {POSITION_OPTIONS.map(opt => (
+                      <option key={opt} value={opt}>{opt === '__custom__' ? 'Custom…' : opt}</option>
+                    ))}
                   </select>
-                  <button onClick={() => setEditingRole(null)} className="p-1 text-stone-400 hover:text-stone-600"><X className="w-3.5 h-3.5" /></button>
+                  {(customPosition || !POSITION_OPTIONS.includes(p.position ?? '')) && (
+                    <input
+                      className="input py-1 text-xs w-40"
+                      placeholder="Type position…"
+                      defaultValue={p.position ?? ''}
+                      onChange={e => setCustomPosition(e.target.value)}
+                      onKeyDown={e => { if (e.key === 'Enter') handleChangePosition(p, customPosition) }}
+                    />
+                  )}
+                  <button onClick={() => handleChangePosition(p, customPosition || p.position || '')} className="p-1 text-emerald-600 hover:text-emerald-700" title="Save"><Save className="w-3.5 h-3.5" /></button>
+                  <button onClick={() => { setEditingPosition(null); setCustomPosition('') }} className="p-1 text-stone-400 hover:text-stone-600"><X className="w-3.5 h-3.5" /></button>
                 </div>
               ) : (
                 <>
-                  <span className={`badge ${roleColors[p.role ?? 'employee']}`}>{p.role ?? 'employee'}</span>
-                  <button onClick={() => setEditingRole(p.user_id)} className="p-1 text-stone-400 hover:text-stone-600" title="Change role"><Edit2 className="w-3.5 h-3.5" /></button>
+                  <span className="badge bg-emerald-50 text-emerald-700 border-emerald-200">{p.position ?? 'No position set'}</span>
+                  <button onClick={() => { setEditingPosition(p.user_id); setCustomPosition('') }} className="p-1 text-stone-400 hover:text-stone-600" title="Change job position"><Edit2 className="w-3.5 h-3.5" /></button>
                 </>
               )}
+
+              {/* ACCESS LEVEL — secondary, small */}
+              {editingRole === p.user_id ? (
+                <div className="flex gap-1 items-center">
+                  <select className="input py-1 text-[10px] w-24" defaultValue={p.role} onChange={e => handleChangeRole(p.user_id, e.target.value as AppRole)}>
+                    <option value="employee">Access: Staff</option>
+                    <option value="manager">Access: Manager</option>
+                    <option value="admin">Access: Admin</option>
+                  </select>
+                  <button onClick={() => setEditingRole(null)} className="p-1 text-stone-400 hover:text-stone-600"><X className="w-3 h-3" /></button>
+                </div>
+              ) : (
+                <button onClick={() => setEditingRole(p.user_id)} title="Change system access level"
+                  className={`text-[10px] px-1.5 py-0.5 rounded-md border font-medium opacity-70 hover:opacity-100 transition ${roleColors[p.role ?? 'employee']}`}>
+                  {p.role ?? 'employee'}
+                </button>
+              )}
+
               <button onClick={() => handleToggleActive(p)}
                 className={`text-xs px-2.5 py-1 rounded-lg border font-medium transition ${p.is_active ? 'bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-100' : 'bg-red-50 text-red-700 border-red-200 hover:bg-red-100'}`}>
                 {p.is_active ? 'Active' : 'Inactive'}
